@@ -1,0 +1,13 @@
+# Mirrors pyspark 4.3.0's "pipelines" extra (the PySpark source itself comes from the
+# Spark tarball), plus what the F1 pipeline's own code imports.
+py4j>=0.10.9.7,<0.10.9.10
+numpy>=1.23.2
+pandas>=2.2.0
+pyarrow>=18.0.0
+grpcio>=1.76.0
+grpcio-status>=1.76.0
+googleapis-common-protos>=1.71.0
+zstandard>=0.25.0
+pyyaml>=3.11
+requests==2.32.3
+boto3>=1.35.99

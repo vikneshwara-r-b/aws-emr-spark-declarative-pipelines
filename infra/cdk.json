@@ -1,0 +1,21 @@
+{
+  "app": "python3 app.py",
+  "context": {
+    "project": "emr-sdp",
+    "region": "us-east-1",
+    "prefix": "f1-pipeline",
+    "glue_database": "f1_sdp_db",
+    "emr_release_label": "emr-spark-8.0.0",
+    "spark_version": "4.3.0",
+    "primary_instance_type": "m5.xlarge",
+    "core_instance_type": "m5.xlarge",
+    "core_instance_count": 2,
+    "core_market": "ON_DEMAND",
+    "primary_market": "ON_DEMAND",
+    "idle_timeout_seconds": 3600,
+    "vpc_cidr": "10.20.0.0/16",
+    "owner_tag": "de-team",
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/core:defaultCrossStackReferences": "strong"
+  }
+}
