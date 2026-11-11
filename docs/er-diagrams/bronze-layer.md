@@ -8,6 +8,10 @@ columns), read straight from the API by a PySpark Python Data Source (`f1_api`, 
 with no relationship to the raw tables: it is the second, independent, non-API source (static CSVs) and
 only joins the graph in the curated layer, via `dim_circuits`.
 
+Every raw and prepared table (and `circuit_track_type`) carries `refreshed_at`, the time the row was loaded. The curated facts
+use it as their Auto CDC sequence (a re-run of a race overwrites the earlier load) and then drop it, so it is not visible in the
+curated or gold tables.
+
 ```mermaid
 erDiagram
     RAW_RESULTS {

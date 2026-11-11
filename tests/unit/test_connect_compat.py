@@ -71,6 +71,30 @@ def test_other_unexpected_responses_still_raise():
         list(core.SparkConnectClient().execute_command_as_iterator("cmd"))
 
 
+def test_a_spark_that_already_has_the_upstream_fix_is_left_alone():
+    # SPARK-59135 (fixed on master): execute_command_as_iterator yields every response and never raises UNKNOWN_RESPONSE
+    class FixedClient:
+        def _execute_and_fetch_as_iterator(self, req, observations):
+            yield from EVENTS
+
+        def execute_command_as_iterator(self, command, observations=None):
+            yield from self._execute_and_fetch_as_iterator(None, observations or {})
+
+    core = SimpleNamespace(SparkConnectClient=FixedClient, PlanObservedMetrics=PlanObservedMetrics)
+    original = FixedClient.execute_command_as_iterator
+    assert connect_compat.install(core) is False
+    assert FixedClient.execute_command_as_iterator is original
+    assert len(list(FixedClient().execute_command_as_iterator("cmd"))) == 3  # the metadata item still reaches the caller
+
+
+def test_unreadable_source_still_gets_the_patch_because_4_3_0_has_the_bug():
+    core = fake_core(EVENTS)
+    original = core.SparkConnectClient.execute_command_as_iterator
+    # builtins have no Python source: inspect raises TypeError, which must count as "bug present"
+    assert connect_compat._still_has_the_bug(len) is True
+    assert connect_compat._still_has_the_bug(original) is True
+
+
 def test_an_unexpected_spark_layout_keeps_the_old_behaviour_instead_of_failing():
     assert connect_compat.install(SimpleNamespace()) is False
 

@@ -13,6 +13,32 @@ race results, qualifying and pit stops, one race per pipeline run.
 - **Pipeline** – `pipeline/f1/`; the curated tables are Auto CDC flows.
 - **Validation** – `scripts/validate.sh` runs the pipeline for two races, a re-run and three more races with real driver transfers (SCD2 history), and checks the results.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    api[("Jolpica-F1 API<br/>one race per run")]
+
+    subgraph emr["Amazon EMR on EC2 (Spark 4.3 installed next to EMR's Spark)"]
+        direction LR
+        raw["Raw<br/>API payload"] --> prep["Prepared<br/>typed and flattened"]
+        prep --> cur["Curated<br/>Auto CDC<br/>SCD2 dimensions, SCD1 facts"]
+        cur --> gold["Gold<br/>5 summary views"]
+    end
+
+    store[("Iceberg tables on S3<br/>registered in Glue Data Catalog")]
+    bundle["Spark 4.3 bundle<br/>built by Docker, kept in S3"]
+    you["You: deploy.sh, run_pipeline.sh, validate.sh"]
+
+    api --> raw
+    bundle -.->|"installed at cluster start"| emr
+    emr <--> store
+    you -.->|"deploy and run"| emr
+```
+
+Each pipeline run reads one race from the API and pushes it through the four zones; Auto CDC keeps the curated tables up to date, with history for the dimensions.
+Entity diagrams of every zone are in `docs/er-diagrams/`.
+
 ## Design notes
 
 | Topic | Decision |
@@ -68,6 +94,7 @@ bootstrap/    install_spark.sh (EMR bootstrap action) and EMR step helpers
 scripts/      deploy / build / run / validate / destroy
 pipeline/f1/  the SDP project (spark-pipeline.yml, transformations/, f1_pipeline_lib/)
 validation/   env_check.py, verify.py (run on the cluster), report.py (local)
+presentation/ the DEV community article about this project (draft, with screenshot placeholders)
 reference_data/, docs/, tests/
 ```
 
